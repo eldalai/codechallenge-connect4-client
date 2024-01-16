@@ -64,8 +64,44 @@ async def play(websocket):
 
 
 async def process_your_turn(websocket, request_data):
-    await process_move(websocket, request_data)
+    turn_action = randint(0, 4)
+    if turn_action > 1:
+        await process_move(websocket, request_data)
+    elif turn_action == 0:
+        await process_kill_col(websocket, request_data)
+    else:
+        await process_kill_row(websocket, request_data)
 
+
+async def process_kill_col(websocket, request_data):
+    side = request_data['data']['side']
+    board = request_data['data']['board']
+    colums = board.find('|', 1) - 1
+    print(board)
+    await send(
+        websocket,
+        'kill',
+        {
+            'game_id': request_data['data']['game_id'],
+            'turn_token': request_data['data']['turn_token'],
+            'col': randint(0, colums),
+        },
+    )
+
+async def process_kill_row(websocket, request_data):
+    side = request_data['data']['side']
+    board = request_data['data']['board']
+    rows = board.count('\n')
+    print(board)
+    await send(
+        websocket,
+        'kill',
+        {
+            'game_id': request_data['data']['game_id'],
+            'turn_token': request_data['data']['turn_token'],
+            'row': randint(0, rows - 1),
+        },
+    )
 
 async def process_move(websocket, request_data):
     side = request_data['data']['side']
@@ -81,7 +117,6 @@ async def process_move(websocket, request_data):
             'col': randint(0, colums),
         },
     )
-
 
 if __name__ == '__main__':
     if len(sys.argv) >= 2:
